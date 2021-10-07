@@ -21,10 +21,11 @@ public class JobCompletionNotificationListener extends JobExecutionListenerSuppo
     @Override
     public void afterJob(JobExecution jobExecution) {
         if (jobExecution.getStatus() == BatchStatus.COMPLETED) {
-            log.info("! JOB FINISHED! Time to verify the results");
+            log.info(" JOB FINISHED! Time to verify the results! ");
 
             List<Offer> results = this.jdbcTemplate.query("SELECT id, descricao, desconto, active FROM offer",
-                    (rs, row) -> new Offer(rs.getLong("id"), rs.getString("descricao"), rs.getBigDecimal("desconto"), rs.getBoolean("active")));
+                    (resultSet, row) -> new Offer(resultSet.getLong("id"), resultSet.getString("descricao"),
+                            resultSet.getBigDecimal("desconto"), resultSet.getBoolean("active")));
 
             for (Offer offer : results) {
                 log.info("Found <" + offer.toString() + "> in the database.");

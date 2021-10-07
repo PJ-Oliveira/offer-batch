@@ -4,6 +4,8 @@ package com.pj.OfferBatch.batch;
 import com.pj.OfferBatch.batch.processor.OfferItemProcessor;
 import com.pj.OfferBatch.domain.model.Offer;
 import com.pj.OfferBatch.util.JobCompletionNotificationListener;
+import com.pj.OfferBatch.util.OfferReaderToExport;
+import com.pj.OfferBatch.util.OfferWriterToExport;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -28,9 +30,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.FileSystemResource;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
-import org.springframework.stereotype.Component;
+
 
 import javax.sql.DataSource;
 
@@ -47,6 +47,11 @@ public class SpringBatchConfig {
 
     @Autowired
     public DataSource dataSource;
+
+    @Autowired
+    private OfferReaderToExport offerReaderToExport;
+    @Autowired
+    private OfferWriterToExport offerWriterToExport;
 
     @Bean
     public FlatFileItemReader<Offer> itemReader() {
@@ -81,6 +86,35 @@ public class SpringBatchConfig {
     }
 
     @Bean
+    public Step step() {
+        return stepBuilderFactory.get("step")
+                .<Offer, Offer>chunk(10)
+                .reader(itemReader())
+                .processor(processor())
+                .writer(writer())
+                .build();
+    }
+    @Bean
+    public Step createStep() {
+        return stepBuilderFactory.get("New Step Offer")
+                .<Offer, Offer> chunk(1)
+                .reader(offerReaderToExport)
+                .writer(offerWriterToExport)
+                .build();
+    }
+
+    //Export
+    @Bean
+    public Job exportJob() {
+        return jobBuilderFactory.get("New Export of Offer")
+                .incrementer(new RunIdIncrementer())
+                .flow(createStep())
+                .end()
+                .build();
+    }
+
+    //Inport
+    @Bean
     public Job importOfferJob(JobCompletionNotificationListener listener) {
         return jobBuilderFactory.get("importOfferJob")
                 .incrementer(new RunIdIncrementer())
@@ -90,15 +124,8 @@ public class SpringBatchConfig {
                 .build();
     }
 
-    @Bean
-    public Step step() {
-        return stepBuilderFactory.get("step")
-                .<Offer, Offer>chunk(10)
-                .reader(itemReader())
-                .processor(processor())
-                .writer(writer())
-                .build();
-    }
-    
+//
+
+
 }
 

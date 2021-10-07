@@ -16,4 +16,6 @@ public class OfferItemProcessor implements ItemProcessor<Offer, Offer> {
         final Offer transformed = new Offer(id, descricao, desconto, status);
         return transformed;
     }
+
+
 }
