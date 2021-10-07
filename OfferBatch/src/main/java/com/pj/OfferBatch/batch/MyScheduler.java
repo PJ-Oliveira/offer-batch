@@ -1,6 +1,6 @@
 package com.pj.OfferBatch.batch;
 
-import com.pj.OfferBatch.util.JobCompletionNotificationListener;
+import com.pj.OfferBatch.batch.configbatch.BatchStepsJobs;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
@@ -22,21 +22,17 @@ public class MyScheduler {
     private JobLauncher jobLauncher;
 
     @Autowired
-    private SpringBatchConfig springBatchConfig;
-
-    @Autowired
-    private JobCompletionNotificationListener listener;
-
+    private BatchStepsJobs batchStepsJobs;
 
     SimpleDateFormat format = new SimpleDateFormat("yyy-MM-dd HH:mm:ss.S");
 
-    @Scheduled(fixedDelay = 1000, initialDelay = 1000)
+    @Scheduled(fixedDelay = 10, initialDelay = 10)
     public void scheduleByFixerRate() throws Exception{
         log.info("Batch Job Starting");
         JobParameters jobParameters = new JobParametersBuilder()
                 .addString("time", format.format(Calendar.getInstance().getTime())).toJobParameters();
-        jobLauncher.run(springBatchConfig.exportOffersToCsv(), jobParameters);
-        jobLauncher.run(springBatchConfig.importOffersToDB(listener), jobParameters);
+        jobLauncher.run(batchStepsJobs.exportOffersToCsv(), jobParameters);
+        jobLauncher.run(batchStepsJobs.importOffersToDB(), jobParameters);
         log.info("Batch job Executed Success");
 
     }

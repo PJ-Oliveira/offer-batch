@@ -1,4 +1,4 @@
-package com.pj.OfferBatch.util;
+package com.pj.OfferBatch.batch.configbatch;
 
 import com.pj.OfferBatch.domain.model.Offer;
 import org.springframework.batch.item.file.FlatFileItemWriter;
