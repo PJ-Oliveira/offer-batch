@@ -28,7 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
+
 import org.springframework.core.io.ClassPathResource;
 
 
@@ -56,7 +56,7 @@ public class SpringBatchConfig {
     @Bean
     public FlatFileItemReader<Offer> itemReader() {
         FlatFileItemReader<Offer> flatFileItemReader = new FlatFileItemReader<>();
-        flatFileItemReader.setResource(new ClassPathResource("input.csv"));
+        flatFileItemReader.setResource(new ClassPathResource("imput.csv"));
         flatFileItemReader.setLineMapper(new DefaultLineMapper<Offer>() {
             {
                 setLineTokenizer(new DelimitedLineTokenizer() {
@@ -86,8 +86,8 @@ public class SpringBatchConfig {
     }
 
     @Bean
-    public Step step() {
-        return stepBuilderFactory.get("step")
+    public Step importStep() {
+        return stepBuilderFactory.get("Step: Import of imput.csv  Offers to DB")
                 .<Offer, Offer>chunk(10)
                 .reader(itemReader())
                 .processor(processor())
@@ -95,36 +95,33 @@ public class SpringBatchConfig {
                 .build();
     }
     @Bean
-    public Step createStep() {
-        return stepBuilderFactory.get("New Step Offer")
+    public Step exportStep() {
+        return stepBuilderFactory.get("Step: Export of Offers to output.csv")
                 .<Offer, Offer> chunk(1)
                 .reader(offerReaderToExport)
                 .writer(offerWriterToExport)
                 .build();
     }
 
-    //Export
     @Bean
-    public Job exportJob() {
-        return jobBuilderFactory.get("New Export of Offer")
+    public Job exportOffersToCsv() {
+        return jobBuilderFactory.get("New Export of Offers to output.csv")
                 .incrementer(new RunIdIncrementer())
-                .flow(createStep())
+                .flow(exportStep())
                 .end()
                 .build();
     }
 
-    //Inport
     @Bean
-    public Job importOfferJob(JobCompletionNotificationListener listener) {
-        return jobBuilderFactory.get("importOfferJob")
+    public Job importOffersToDB(JobCompletionNotificationListener listener) {
+        return jobBuilderFactory.get("New Import of imput.csv  Offers to DB")
                 .incrementer(new RunIdIncrementer())
                 .listener(listener)
-                .flow(step())
+                .flow(importStep())
                 .end()
                 .build();
     }
 
-//
 
 
 }
