@@ -1,6 +1,7 @@
 package com.pj.OfferBatch.util;
 
 import com.pj.OfferBatch.domain.model.Offer;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.database.JdbcCursorItemReader;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +13,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 @Component
+@Slf4j
 public class OfferReaderToExport extends JdbcCursorItemReader<Offer> implements ItemReader<Offer> {
 
     public OfferReaderToExport(@Autowired DataSource dataSource) {
@@ -29,7 +31,7 @@ public class OfferReaderToExport extends JdbcCursorItemReader<Offer> implements 
             offer.setDescricao(resultSet.getString("descricao"));
             offer.setDesconto(resultSet.getBigDecimal("desconto"));
             offer.setActive(resultSet.getBoolean("active"));
-
+            log.info("OfferRowMapping the following {}", offer);
             return offer;
         }
     }

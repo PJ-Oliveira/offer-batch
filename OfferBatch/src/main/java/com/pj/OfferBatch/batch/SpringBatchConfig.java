@@ -11,21 +11,13 @@ import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.configuration.annotation.*;
 import org.springframework.batch.core.launch.support.RunIdIncrementer;
-import org.springframework.batch.item.ItemReader;
-import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.database.BeanPropertyItemSqlParameterSourceProvider;
 import org.springframework.batch.item.database.JdbcBatchItemWriter;
-import org.springframework.batch.item.database.JdbcCursorItemReader;
 import org.springframework.batch.item.file.FlatFileItemReader;
-import org.springframework.batch.item.file.FlatFileItemWriter;
-import org.springframework.batch.item.file.LineMapper;
 import org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper;
 import org.springframework.batch.item.file.mapping.DefaultLineMapper;
-import org.springframework.batch.item.file.transform.BeanWrapperFieldExtractor;
-import org.springframework.batch.item.file.transform.DelimitedLineAggregator;
 import org.springframework.batch.item.file.transform.DelimitedLineTokenizer;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -67,11 +59,12 @@ public class SpringBatchConfig {
                 });
             }
         });
+        log.info("Reading {}", flatFileItemReader);
         return flatFileItemReader;
     }
 
     @Bean
-    public OfferItemProcessor processor(){
+    public OfferItemProcessor offerItemProcessor(){
         return new OfferItemProcessor();
 
     }
@@ -82,22 +75,23 @@ public class SpringBatchConfig {
         writer.setItemSqlParameterSourceProvider(new BeanPropertyItemSqlParameterSourceProvider<>());
         writer.setSql("INSERT INTO offer (descricao, desconto, active) VALUES (:descricao, :desconto, :active)");
         writer.setDataSource(this.dataSource);
+        log.info("Writing {}", writer);
         return writer;
     }
 
     @Bean
     public Step importStep() {
         return stepBuilderFactory.get("Step: Import of imput.csv  Offers to DB")
-                .<Offer, Offer>chunk(10)
+                .<Offer, Offer>chunk(100)
                 .reader(itemReader())
-                .processor(processor())
+                .processor(offerItemProcessor())
                 .writer(writer())
                 .build();
     }
     @Bean
     public Step exportStep() {
         return stepBuilderFactory.get("Step: Export of Offers to output.csv")
-                .<Offer, Offer> chunk(1)
+                .<Offer, Offer> chunk(100)
                 .reader(offerReaderToExport)
                 .writer(offerWriterToExport)
                 .build();

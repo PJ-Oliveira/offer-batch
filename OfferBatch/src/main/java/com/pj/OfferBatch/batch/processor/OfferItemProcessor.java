@@ -15,9 +15,9 @@ public class OfferItemProcessor implements ItemProcessor<Offer, Offer> {
         final String descricao = offer.getDescricao().toUpperCase();
         final BigDecimal desconto = offer.getDesconto();
         final Boolean status = offer.getActive();
-        final Offer transformed = new Offer(id, descricao, desconto, status);
-        log.info("Converting ( {}",offer," ) into ( {}",transformed," )");
-        return transformed;
+        final Offer transformedOffer = new Offer(id, descricao, desconto, status);
+        log.info("OfferItemProcessing the following: {}", offer);
+        return transformedOffer;
     }
 
 

@@ -21,7 +21,7 @@ public class JobCompletionNotificationListener extends JobExecutionListenerSuppo
     @Override
     public void afterJob(JobExecution jobExecution) {
         if (jobExecution.getStatus() == BatchStatus.COMPLETED) {
-            log.info(" JOB FINISHED! Time to verify the results! ");
+            log.info(" Job Finished! Please, verify the results! ");
 
             List<Offer> results = this.jdbcTemplate.query("SELECT id, descricao, desconto, active FROM offer",
                     (resultSet, row) -> new Offer(resultSet.getLong("id"), resultSet.getString("descricao"),
